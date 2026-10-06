@@ -86,6 +86,19 @@ cd transport
 
 ---
 
+## ⚙️ Integración continua con GitHub Actions
+
+El workflow [`CI a Producción`](.github/workflows/ci.yml) se ejecuta en pull requests dirigidos a `main` y en cada push a esa rama. Cada ejecución se identifica como **CI a Producción - @github.actor** y realiza estas validaciones:
+
+1. Compila el código Java.
+2. Ejecuta los tests.
+3. Valida la configuración de Docker Compose, descarga la imagen de MySQL y construye la imagen de la aplicación.
+4. Si alguna validación falla, publica el detalle en el resumen de la ejecución y marca el workflow como fallido.
+
+Para bloquear la integración de cambios con errores, configura una regla de protección para `main` en GitHub que requiera el check **Validar código**, **Validar tests**, **Validar imágenes Docker Compose** y **Notificar resultado de CI**. Las notificaciones personales de GitHub dependen de la configuración de watch/notificaciones de cada usuario.
+
+---
+
 ## ☁️ Despliegue en la Nube
 
 El archivo [`render.yaml`](render.yaml) define dos servicios independientes para Render:

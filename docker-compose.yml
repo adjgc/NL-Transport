@@ -3,7 +3,7 @@ services:
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: nl_transport
+      MYSQL_DATABASE: nltransport
       MYSQL_USER: ${MYSQL_USER:-nltransport}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nltransport_dev}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-nltransport_root_dev}
