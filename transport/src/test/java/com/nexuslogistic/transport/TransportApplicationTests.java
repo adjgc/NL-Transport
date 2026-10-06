@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
@@ -33,6 +34,16 @@ class TransportApplicationTests {
 		mockMvc.perform(get("/"))
 				.andExpect(status().isOk())
 				.andExpect(content().string(containsString("Centro de operaciones")))
-				.andExpect(content().string(containsString("NL-26041")));
+				.andExpect(content().string(containsString("NL-26041")))
+				.andExpect(content().string(containsString("rel=\"icon\" type=\"image/png\" href=\"/img/nltransport.png\"")))
+				.andExpect(content().string(containsString("class=\"brand-mark\" src=\"/img/nltransport.png\"")))
+				.andExpect(content().string(containsString("class=\"avatar\" src=\"/img/nltransport.png\"")));
+	}
+
+	@Test
+	void logoImageIsServedAsPng() throws Exception {
+		mockMvc.perform(get("/img/nltransport.png"))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_PNG));
 	}
 }
