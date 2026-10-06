@@ -1,0 +1,104 @@
+name: CI a Producción
+run-name: CI a Producción - @${{ github.actor }}
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-produccion-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-code:
+    name: Validar código
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          cache-dependency-path: transport/pom.xml
+
+      - name: Compilar código
+        run: bash ./transport/mvnw --batch-mode --no-transfer-progress -f transport/pom.xml clean compile
+
+  validate-tests:
+    name: Validar tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          cache-dependency-path: transport/pom.xml
+
+      - name: Ejecutar tests
+        run: bash ./transport/mvnw --batch-mode --no-transfer-progress -f transport/pom.xml clean test
+
+  validate-compose:
+    name: Validar imágenes Docker Compose
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Validar configuración de Docker Compose
+        run: docker compose config --quiet
+
+      - name: Descargar imágenes externas
+        run: docker compose pull mysql
+
+      - name: Construir imagen de la aplicación
+        run: docker compose build --pull app
+
+  notify-failure:
+    name: Notificar resultado de CI
+    if: always()
+    needs:
+      - validate-code
+      - validate-tests
+      - validate-compose
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publicar resultado
+        env:
+          CODE_RESULT: ${{ needs.validate-code.result }}
+          TESTS_RESULT: ${{ needs.validate-tests.result }}
+          COMPOSE_RESULT: ${{ needs.validate-compose.result }}
+        shell: bash
+        run: |
+          {
+            echo "## Resultado de CI a Producción"
+            echo
+            echo "| Validación | Resultado |"
+            echo "| --- | --- |"
+            echo "| Código | ${CODE_RESULT} |"
+            echo "| Tests | ${TESTS_RESULT} |"
+            echo "| Docker Compose | ${COMPOSE_RESULT} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$CODE_RESULT" == "failure" || "$TESTS_RESULT" == "failure" || "$COMPOSE_RESULT" == "failure" ]]; then
+            echo "::error title=CI a Producción rechazado::Falló una o más validaciones. Revisa los jobs de código, tests y Docker Compose."
+            exit 1
+          fi

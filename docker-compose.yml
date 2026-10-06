@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     container_name: mysql_nltransport
     environment:
-      MYSQL_DATABASE: nl_transport
+      MYSQL_DATABASE: nltransport
       MYSQL_USER: ${MYSQL_USER:-nltransport}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nltransport_dev}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-nltransport_root_dev}
