@@ -2,9 +2,6 @@ name: CI a Producción
 run-name: CI a Producción - @${{ github.actor }}
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
@@ -23,10 +20,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Obtener código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Configurar Java 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "25"
@@ -42,10 +39,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Obtener código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Configurar Java 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v7
         with:
           distribution: temurin
           java-version: "25"
@@ -61,7 +58,7 @@ jobs:
     timeout-minutes: 25
     steps:
       - name: Obtener código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Validar configuración de Docker Compose
         run: docker compose config --quiet
