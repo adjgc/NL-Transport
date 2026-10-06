@@ -12,7 +12,7 @@ body { margin: 0; background: var(--canvas); color: var(--navy); font-family: "D
 a { color: inherit; text-decoration: none; }
 .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 10; display: flex; flex-direction: column; width: 246px; padding: 25px 17px 18px; background: #fff; border-right: 1px solid var(--line); }
 .brand { display: flex; gap: 11px; align-items: center; padding: 0 9px 38px; }
-.brand-mark { display: grid; width: 41px; height: 41px; place-items: center; border-radius: 12px; background: #2363eb; color: white; font: 800 15px Manrope, sans-serif; letter-spacing: -1px; }
+.brand-mark { display: block; width: 41px; height: 41px; flex: 0 0 auto; object-fit: contain; }
 .brand-name { font: 600 15px Manrope, sans-serif; letter-spacing: -.4px; }
 .brand-name strong { font-weight: 800; }
 .brand-name small { display: block; margin-top: 3px; color: #91a0b4; font: 700 8px "DM Sans", sans-serif; letter-spacing: 1.2px; }
@@ -33,7 +33,7 @@ a { color: inherit; text-decoration: none; }
 .breadcrumb span { margin: 0 9px; color: #c6ced8; }
 .topbar-right { display: flex; align-items: center; gap: 8px; color: #65738a; font-size: 11px; }
 .live-dot, .tiny-dot { width: 7px; height: 7px; border-radius: 50%; background: #20b486; }
-.avatar { display: grid; width: 30px; height: 30px; place-items: center; margin-left: 12px; border-radius: 50%; background: #e9efff; color: #2363eb; font-size: 10px; font-weight: 700; }
+.avatar { display: block; width: 30px; height: 30px; object-fit: contain; margin-left: 12px; border-radius: 6px; }
 .page-wrap { max-width: 1500px; margin: 0 auto; padding: 31px 38px 20px; }
 .page-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .eyebrow { margin: 0 0 7px; color: #8795a8; font-size: 10px; font-weight: 700; letter-spacing: 1.1px; }

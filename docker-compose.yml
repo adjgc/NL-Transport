@@ -2,11 +2,12 @@ services:
   mysql:
     image: mysql:8.4
     restart: unless-stopped
+    container_name: nl-transport-mysql
     environment:
-      MYSQL_DATABASE: nltransport
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-nl_transport}
       MYSQL_USER: ${MYSQL_USER:-nltransport}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nltransport_dev}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-nltransport_root_dev}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-nltransport}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-nltransport}
     ports:
         - "127.0.0.1:${MYSQL_PUBLISHED_PORT:-3306}:3306"
     volumes:
@@ -24,15 +25,16 @@ services:
       dockerfile: Dockerfile
     image: nl-transport:latest
     restart: unless-stopped
+    container_name: nl-transport-app
     depends_on:
       mysql:
         condition: service_healthy
     environment:
       PORT: 8080
-      MYSQL_HOSTPORT: mysql:3306
-      MYSQL_DATABASE: nl_transport
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-nl_transport}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-nl_transport}
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-nltransport}
-      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-nltransport_dev}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-nltransport}
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0 -XX:+UseContainerSupport
     ports:
       - "${APP_PUBLISHED_PORT:-8080}:8080"
