@@ -101,7 +101,17 @@ Para bloquear la integración de cambios con errores, configura una regla de pro
 
 ## ☁️ Despliegue en la Nube
 
-Este proyecto está optimizado y preparado para ser desplegado en una instancia de **AWS EC2**, aprovechando la arquitectura basada en contenedores de Docker para garantizar la consistencia entre el entorno de desarrollo y producción.
+El archivo [`render.yaml`](render.yaml) define dos servicios independientes para Render:
+
+- **`nl-transport`**: servicio web Docker construido desde el `Dockerfile` del repositorio.
+- **`nl-transport-mysql`**: servicio privado con MySQL 8.4 y un disco persistente de 10 GB. La base no se expone a Internet; la aplicación la alcanza por la red privada de Render.
+
+Render no despliega `docker-compose.yml`; Compose queda para desarrollo local. El Blueprint declara y configura la app y MySQL como servicios Render separados, sin publicar la base de datos. Para producción, crea los dos servicios desde el Blueprint:
+
+1. Sube los cambios a GitHub y verifica que **NL Transport CI** haya terminado correctamente en `main`.
+2. En Render, elige **New > Blueprint**, conecta el repositorio y selecciona la rama `main`.
+3. Render leerá `render.yaml` y generará las contraseñas de MySQL. Revisa los recursos antes de confirmar. Ambos servicios están configurados en la región de Oregon y usan el plan Starter; el disco persistente requiere un servicio de pago.
+4. En el servicio web, conserva el auto-deploy **After CI Checks Pass** (`checksPass`). Render no desplegará el commit si falla alguna comprobación de CI.
 
 ---
 

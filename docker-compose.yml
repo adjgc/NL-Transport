@@ -2,7 +2,6 @@ services:
   mysql:
     image: mysql:8.4
     restart: unless-stopped
-    container_name: mysql_nltransport
     environment:
       MYSQL_DATABASE: nltransport
       MYSQL_USER: ${MYSQL_USER:-nltransport}
@@ -25,13 +24,13 @@ services:
       dockerfile: Dockerfile
     image: nl-transport:latest
     restart: unless-stopped
-    container_name: nl_transport_app
     depends_on:
       mysql:
         condition: service_healthy
     environment:
       PORT: 8080
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/nl_transport?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      MYSQL_HOSTPORT: mysql:3306
+      MYSQL_DATABASE: nl_transport
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-nltransport}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-nltransport_dev}
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0 -XX:+UseContainerSupport
