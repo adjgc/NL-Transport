@@ -1,0 +1,81 @@
+HELP.md
+
+# Build output and logs
+**/target/
+**/build/
+**/out/
+*.log
+hs_err_pid*
+
+# Local environment files and credentials
+.env
+.env.*
+!.env.example
+*.env
+*.env.*
+!.env.example
+!.env.*.example
+
+# Local or production-only Spring configuration
+**/application-local.properties
+**/application-local.yml
+**/application-local.yaml
+**/application-prod.properties
+**/application-prod.yml
+**/application-prod.yaml
+**/application-production.properties
+**/application-production.yml
+**/application-production.yaml
+
+# Local Docker overrides may contain credentials
+docker-compose.override.yml
+docker-compose.override.yaml
+docker-compose.*.local.yml
+docker-compose.*.local.yaml
+!docker-compose.override.example.yml
+!docker-compose.override.example.yaml
+
+# Local secrets and private keys
+**/.secrets/
+**/secrets/
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.key
+
+.mvn/wrapper/maven-wrapper.jar
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+**/.idea/
+*.iws
+*.iml
+*.ipr
+**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+**/.vscode/
+
+### Operating system ###
+.DS_Store
+Thumbs.db
+Desktop.ini
