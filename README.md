@@ -52,6 +52,8 @@
 
 El workflow [`CI a Producción`](.github/workflows/ci_cd.yml) se ejecuta en cada push a `main`. Cada ejecución se identifica como **CI a Producción - @github.actor** y realiza el proceso completo:
 
+![Diagrama del proceso CI/CD](Pipeline_CICD.png)
+
 1. Compila el código Java.
 2. Ejecuta los tests.
 3. Valida la configuración de Docker Compose, descarga la imagen de PostgreSQL 17 y construye la imagen de la aplicación.
