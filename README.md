@@ -1,6 +1,6 @@
 # NL Transport
 
-**NL Transport** es una aplicación web concebida para la gestión y administración de clientes y cargas. La plataforma permite realizar un seguimiento detallado del estatus de los envíos y visualizar la ubicación actual de la flota/cargas en tiempo real mediante un mapa interactivo.
+**NL Transport** es una aplicación web creada para la gestión y administración de clientes y cargas. La plataforma permite realizar un seguimiento detallado del estatus de los envíos y visualizar la ubicación actual de las cargas mediante un mapa interactivo.
 
 ---
 
@@ -48,15 +48,15 @@
 
 ---
 
-## ⚙️ Integración continua con GitHub Actions
+## ⚙️ CI/CD con GitHub Actions y Render
 
-El workflow [`CI a Producción`](.github/workflows/ci_cd.yml) se ejecuta en cada push a `main`. Cada ejecución se identifica como **CI a Producción - @github.actor** y sigue este proceso:
+El workflow [`CI a Producción`](.github/workflows/ci_cd.yml) se ejecuta en cada push a `main`. Cada ejecución se identifica como **CI a Producción - @github.actor** y realiza el proceso completo:
 
 1. Compila el código Java.
 2. Ejecuta los tests.
 3. Valida la configuración de Docker Compose, descarga la imagen de PostgreSQL 17 y construye la imagen de la aplicación.
 4. Si las validaciones pasan, publica `adjgc/nl_transport:latest` y una etiqueta inmutable con el SHA del commit en Docker Hub.
-5. Solicita a Render desplegar la imagen `latest` mediante el Deploy Hook del Web Service.
+5. Solicita a Render desplegar la imagen `latest` mediante el Deploy Hook del Web Service. Configura ese servicio para usar `docker.io/adjgc/nl_transport:latest`; si la imagen es privada, Render también necesita credenciales de lectura de Docker Hub.
 6. Publica el resultado de cada job en el resumen y marca el workflow como fallido si una validación, publicación o solicitud de despliegue falla.
 
 Configura estos secretos en **Settings > Secrets and variables > Actions** del repositorio:
@@ -67,25 +67,22 @@ Configura estos secretos en **Settings > Secrets and variables > Actions** del r
 | `DOCKERHUB_TOKEN` | PAT de Docker Hub con permiso de lectura y escritura |
 | `RENDER_DEPLOY_HOOK` | URL del Deploy Hook del Web Service de Render |
 
----
+### Configuración inicial de los servicios en Render
 
-## ☁️ Despliegue en Render
-
-Render despliega la aplicación como un **Web Service** desde la imagen `docker.io/adjgc/nl_transport:latest` y proporciona PostgreSQL administrado. Render no ejecuta este `compose.yml` como una aplicación multi-contenedor; el Compose se usa para desarrollo local y para validar la imagen en CI. Configura el Web Service para usar esa imagen, agrega un Deploy Hook y guarda su URL en el secreto `RENDER_DEPLOY_HOOK`. Si la imagen de Docker Hub es privada, configura también en Render credenciales de lectura del repositorio.
-
-1. Crea una base de datos PostgreSQL 17 en Render y un Web Service con **Existing Image** configurado como `docker.io/adjgc/nl_transport:latest`. Si el repositorio de Docker Hub es privado, agrega credenciales de lectura para que Render pueda descargar la imagen.
-2. En la base de datos de Render, copia los datos de conexión **internos** (host, puerto, nombre de base, usuario y contraseña) al entorno del Web Service:
+1. Crea un servicio **PostgreSQL 17** en Render y espera hasta que esté activo. Entonces podrás consultar el hostname interno, el usuario, el nombre de la base de datos y la contraseña generada por Render.
+2. Crea un **Web Service** de tipo **Existing Image** con la imagen `docker.io/adjgc/nl_transport:latest`. Si el repositorio de Docker Hub es privado, agrega credenciales con permiso de lectura para que Render pueda descargarla.
+3. En las variables de entorno del Web Service configura:
 
    | Variable | Valor |
    | --- | --- |
-   | `PGHOST` | Host interno de la base de datos Render |
-   | `PGPORT` | Puerto de la base de datos Render |
-   | `PGDATABASE` | Nombre de la base de datos Render |
-   | `PGUSER` | Usuario de la base de datos Render |
-   | `PGPASSWORD` | Contraseña de la base de datos Render |
+   | `SPRING_DATASOURCE_PASSWORD` | Contraseña generada por Render para el servicio PostgreSQL |
+   | `SPRING_DATASOURCE_URL` | URL JDBC construida con el hostname interno, puerto y nombre de base de datos de Render |
+   | `SPRING_DATASOURCE_USERNAME` | Usuario definido para la base de datos |
 
-   Spring Boot arma la conexión PostgreSQL con estas variables y usa automáticamente el puerto `PORT` que Render define para el Web Service. No uses la URL externa de la base desde el servicio alojado en Render.
-3. Despliega la aplicación. Hibernate crea o actualiza el esquema al arrancar. Los datos locales de MySQL no se migran automáticamente a PostgreSQL; realiza una migración explícita si necesitas conservarlos.
+   El formato de `SPRING_DATASOURCE_URL` es `jdbc:postgresql://HOST_INTERNO:PUERTO/NOMBRE_BASE`. Usa el hostname interno de Render y el puerto que muestra el servicio PostgreSQL; no pegues directamente una URI `postgres://` o `postgresql://`, porque Spring Boot espera una URL JDBC.
+4. En la configuración del Web Service crea un **Deploy Hook** y guarda su URL como el secreto `RENDER_DEPLOY_HOOK` del repositorio GitHub. Con esto, después de publicar correctamente la imagen, GitHub Actions solicita el despliegue de la versión actualizada.
+
+Render ejecuta la aplicación como Web Service y PostgreSQL como un servicio administrado independiente; `compose.yml` se usa para desarrollo local y validación en CI. Spring Boot utiliza el puerto `PORT` proporcionado por Render y crea o actualiza el esquema al iniciar.
 
 ---
 
