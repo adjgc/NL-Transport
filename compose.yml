@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    container_name: nl_transport_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nl_transport}
+      POSTGRES_USER: ${POSTGRES_USER:-nltransport}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nltransport}
+    ports:
+      - "127.0.0.1:${POSTGRES_PUBLISHED_PORT:-5432}:5432"
+    volumes:
+      - nl-transport-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nl_transport:latest
+    restart: unless-stopped
+    container_name: nl_transport_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-nl_transport}
+      PGUSER: ${POSTGRES_USER:-nltransport}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-nltransport}
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0 -XX:+UseContainerSupport
+    ports:
+      - "${APP_PUBLISHED_PORT:-8080}:8080"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+
+volumes:
+  nl-transport-postgres-data:
